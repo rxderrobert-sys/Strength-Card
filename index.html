@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>National Strength Card (P99.5) – Rechner</title>
+  <style>
+    :root{font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#111;}
+    body{margin:24px; max-width: 980px;}
+    h1{margin:0 0 8px; font-size: 22px;}
+    .sub{color:#444; margin:0 0 18px; line-height:1.35}
+    .grid{display:grid; grid-template-columns: 1.1fr 0.9fr; gap:18px; align-items:start;}
+    @media (max-width: 920px){.grid{grid-template-columns:1fr;}}
+    .card{border:1px solid #ddd; border-radius:16px; padding:16px; box-shadow: 0 1px 10px rgba(0,0,0,.06)}
+    label{display:block; font-size: 13px; color:#333; margin:10px 0 6px;}
+    select,input,button{width:100%; padding:10px 12px; border:1px solid #ccc; border-radius:12px; font-size:14px;}
+    button{border-color:#111; background:#111; color:#fff; cursor:pointer;}
+    button:active{transform: translateY(1px);}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+    .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+    .kpi{display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;}
+    @media (max-width: 760px){.kpi{grid-template-columns: repeat(2, 1fr);} }
+    .k{border:1px solid #eee; border-radius:14px; padding:10px 12px; background:#fafafa}
+    .k b{display:block; font-size:12px; color:#444; font-weight:600}
+    .k span{display:block; font-size:20px; margin-top:4px}
+    .note{font-size:12px; color:#555; margin-top:10px; line-height:1.35}
+    canvas{width:100%; height:auto; border:1px solid #eee; border-radius:16px; background:white}
+    .tiny{font-size:12px; color:#555; margin-top:8px}
+    code{background:#f6f6f6; padding:2px 6px; border-radius:6px;}
+  </style>
+</head>
+<body>
+  <h1>National Strength Card – 100 = P99.5, 10 Punkte = 1 SD</h1>
+  <p class="sub">
+    Nutzer geben Squat/Bench/Deadlift ein, wählen Sex & Gewichtsklasse, und erhalten Scores + Radar-Chart.
+    Formel: <code>Score = 100 + ((Wert − Cap_P99.5) / SD) · 10</code>.
+    (Raw; Gewichtsklassen 100 & 110 bei Männern sind bewusst entfernt.)
+  </p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="row">
+        <div>
+          <label for="sex">Sex</label>
+          <select id="sex">
+            <option value="M">Männer</option>
+            <option value="F">Frauen</option>
+          </select>
+        </div>
+        <div>
+          <label for="wc">Gewichtsklasse</label>
+          <select id="wc"></select>
+        </div>
+      </div>
+
+      <div class="row3">
+        <div>
+          <label for="squat">Squat (kg)</label>
+          <input id="squat" type="number" inputmode="decimal" step="0.5" placeholder="z. B. 252.5" />
+        </div>
+        <div>
+          <label for="bench">Bench (kg)</label>
+          <input id="bench" type="number" inputmode="decimal" step="0.5" placeholder="z. B. 145" />
+        </div>
+        <div>
+          <label for="deadlift">Deadlift (kg)</label>
+          <input id="deadlift" type="number" inputmode="decimal" step="0.5" placeholder="z. B. 290.5" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="total">Total (kg) (auto)</label>
+          <input id="total" type="number" step="0.5" value="0" disabled />
+        </div>
+        <div>
+          <label>Aktion</label>
+          <button id="calcBtn">Berechnen</button>
+        </div>
+      </div>
+
+      <div class="kpi">
+        <div class="k"><b>Squat Score</b><span id="sScore">–</span></div>
+        <div class="k"><b>Bench Score</b><span id="bScore">–</span></div>
+        <div class="k"><b>Deadlift Score</b><span id="dScore">–</span></div>
+        <div class="k"><b>Total Score</b><span id="tScore">–</span></div>
+      </div>
+
+      <div class="note" id="capsText">Caps/SDs erscheinen nach „Berechnen“.</div>
+    </div>
+
+    <div class="card">
+      <canvas id="radar" width="520" height="520"></canvas>
+      <div class="tiny">Anzeige-Skala: 50–110 (nur Darstellung).</div>
+    </div>
+  </div>
+
+  <!-- Modal Ergebnis (pop-up) -->
+  <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; padding:18px;">
+    <div style="width:min(960px, 100%); background:#fff; border-radius:16px; padding:16px; box-shadow:0 10px 40px rgba(0,0,0,.25)">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+        <div>
+          <div style="font-weight:700; font-size:16px;">Deine National Strength Card</div>
+          <div style="color:#444; font-size:12px; margin-top:2px;" id="modalMeta">–</div>
+        </div>
+        <button id="closeBtn" style="border:1px solid #ddd; background:#fff; color:#111; border-radius:12px; padding:8px 10px; cursor:pointer;">Schließen</button>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:12px; align-items:start;">
+        <div>
+          <div class="kpi" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="k"><b>Squat</b><span id="msScore">–</span></div>
+            <div class="k"><b>Bench</b><span id="mbScore">–</span></div>
+            <div class="k"><b>Deadlift</b><span id="mdScore">–</span></div>
+            <div class="k"><b>Total</b><m><span id="mtScore">–</span></div>
+          </div>
+          <div class="note" id="modalCaps" style="margin-top:10px;">–</div>
+        </div>
+        <div>
+          <canvas id="radarModal" width="460" height="460" style="width:100%; height:auto; border:1px solid #eee; border-radius:16px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Caps/SDs (Raw) – eingebettet.
+const data = "+json_str+";
+
+const sexEl = document.getElementById('sex');
+const wcEl = document.getElementById('wc');
+const squatEl = document.getElementById('squat');
+const benchEl = document.getElementById('bench');
+const deadEl = document.getElementById('deadlift');
+const totalEl = document.getElementById('total');
+
+const sScoreEl = document.getElementById('sScore');
+const bScoreEl = document.getElementById('bScore');
+const dScoreEl = document.getElementById('dScore');
+const tScoreEl = document.getElementById('tScore');
+const capsTextEl = document.getElementById('capsText');
+
+const modal = document.getElementById('modal');
+const closeBtn = document.getElementById('closeBtn');
+const calcBtn = document.getElementById('calcBtn');
+
+function fmt(n){
+  if (!Number.isFinite(n)) return '–';
+  return (Math.round(n*10)/10).toFixed(1);
+}
+
+function updateTotalOnly(){
+  const S = parseFloat(squatEl.value||'0');
+  const B = parseFloat(benchEl.value||'0');
+  const D = parseFloat(deadEl.value||'0');
+  const T = S+B+D;
+  totalEl.value = (Math.round(T*2)/2).toFixed(1);
+}
+
+function updateWCOptions(){
+  const sex = sexEl.value;
+  const wcs = Object.keys(data[sex]||{});
+  wcs.sort((a,b)=>{
+    const an = parseFloat(String(a).replace('+',''));
+    const bn = parseFloat(String(b).replace('+',''));
+    if (an !== bn) return an - bn;
+    return (String(a).includes('+')?1:0) - (String(b).includes('+')?1:0);
+  });
+  wcEl.innerHTML = '';
+  for (const wc of wcs){
+    const opt = document.createElement('option');
+    opt.value = wc;
+    opt.textContent = wc;
+    wcEl.appendChild(opt);
+  }
+}
+
+function score(x, cap, sd){
+  return 100 + ((x - cap) / sd) * 10;
+}
+
+function clamp(x, lo, hi){
+  return Math.max(lo, Math.min(hi, x));
+}
+
+function drawRadarOn(canvasId, scores){
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const labels = ['Squat','Bench','Deadlift','Total'];
+  const minV = 50, maxV = 110;
+  const cx = W/2, cy = H/2;
+  const R = Math.min(W,H)*0.38;
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.lineWidth = 1;
+  const rings = [50,60,70,80,90,100,110];
+  for (const v of rings){
+    const r = R * ((v - minV) / (maxV - minV));
+    ctx.beginPath();
+    for (let i=0;i<labels.length;i++){
+      const a = -Math.PI/2 + i*(2*Math.PI/labels.length);
+      const x = cx + r*Math.cos(a);
+      const y = cy + r*Math.sin(a);
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+  for (let i=0;i<labels.length;i++){
+    const a = -Math.PI/2 + i*(2*Math.PI/labels.length);
+    const x = cx + R*Math.cos(a);
+    const y = cy + R*Math.sin(a);
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(x,y);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.font = '14px system-ui';
+    const tx = cx + (R+22)*Math.cos(a);
+    const ty = cy + (R+22)*Math.sin(a);
+    ctx.fillText(labels[i], tx - 18, ty + 6);
+  }
+
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.beginPath();
+  for (let i=0;i<labels.length;i++){
+    const v = clamp(scores[i], minV, maxV);
+    const r = R * ((v - minV) / (maxV - minV));
+    const a = -Math.PI/2 + i*(2*Math.PI/labels.length);
+    const x = cx + r*Math.cos(a);
+    const y = cy + r*Math.sin(a);
+    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+}
+
+function clearOutputs(){
+  sScoreEl.textContent = bScoreEl.textContent = dScoreEl.textContent = tScoreEl.textContent = '–';
+  capsTextEl.textContent = 'Caps/SDs erscheinen nach „Berechnen“.';
+  drawRadarOn('radar', [50,50,50,50]);
+}
+
+// modal close
+closeBtn.addEventListener('click', ()=>{ modal.style.display='none'; });
+modal.addEventListener('click', (e)=>{ if (e.target === modal) modal.style.display='none'; });
+
+calcBtn.addEventListener('click', ()=>{
+  const sex = sexEl.value;
+  const wc = wcEl.value;
+  const ref = (data[sex]||{})[wc];
+  if (!ref){ alert('Keine Daten für diese Auswahl.'); return; }
+
+  const S = parseFloat(squatEl.value||'0');
+  const B = parseFloat(benchEl.value||'0');
+  const D = parseFloat(deadEl.value||'0');
+  const T = S+B+D;
+  totalEl.value = (Math.round(T*2)/2).toFixed(1);
+
+  const sSc = score(S, ref.S_cap, ref.S_sd);
+  const bSc = score(B, ref.B_cap, ref.B_sd);
+  const dSc = score(D, ref.D_cap, ref.D_sd);
+  const tSc = score(T, ref.T_cap, ref.T_sd);
+
+  sScoreEl.textContent = fmt(sSc);
+  bScoreEl.textContent = fmt(bSc);
+  dScoreEl.textContent = fmt(dSc);
+  tScoreEl.textContent = fmt(tSc);
+
+  capsTextEl.innerHTML =
+    `Caps (P99.5=100): S ${ref.S_cap} / B ${ref.B_cap} / D ${ref.D_cap} / T ${ref.T_cap}<br>`+
+    `SD (10 Punkte = 1 SD): S ${ref.S_sd} / B ${ref.B_sd} / D ${ref.D_sd} / T ${ref.T_sd}`;
+
+  // modal content
+  document.getElementById('msScore').textContent = fmt(sSc);
+  document.getElementById('mbScore').textContent = fmt(bSc);
+  document.getElementById('mdScore').textContent = fmt(dSc);
+  document.getElementById('mtScore').textContent = fmt(tSc);
+  document.getElementById('modalMeta').textContent = `${sex==='M'?'Männer':'Frauen'} · ${wc} kg · Raw`;
+  document.getElementById('modalCaps').innerHTML =
+    `Eingaben: S ${fmt(S)} / B ${fmt(B)} / D ${fmt(D)} / T ${fmt(T)}<br>`+
+    `Caps (P99.5=100): S ${ref.S_cap} / B ${ref.B_cap} / D ${ref.D_cap} / T ${ref.T_cap}<br>`+
+    `SD (10 Punkte = 1 SD): S ${ref.S_sd} / B ${ref.B_sd} / D ${ref.D_sd} / T ${ref.T_sd}`;
+
+  drawRadarOn('radar', [sSc,bSc,dSc,tSc]);
+  drawRadarOn('radarModal', [sSc,bSc,dSc,tSc]);
+  modal.style.display='flex';
+});
+
+// wiring
+sexEl.addEventListener('change', ()=>{updateWCOptions(); clearOutputs();});
+wcEl.addEventListener('change', clearOutputs);
+[squatEl, benchEl, deadEl].forEach(el => el.addEventListener('input', updateTotalOnly));
+
+updateWCOptions();
+updateTotalOnly();
+clearOutputs();
+</script>
+</body>
+</html>
