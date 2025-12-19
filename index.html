@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>National Strength Card</title>
+  <title>National Strength Card (P99.5) – Rechner</title>
   <style>
     :root{font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#111;}
     body{margin:24px; max-width: 980px;}
@@ -18,8 +18,9 @@
     button:active{transform: translateY(1px);}
     .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
     .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+
+    /* Lifts: 3 Kacheln */
     .kpi{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;}
-    @media (max-width: 760px){.kpi{grid-template-columns: repeat(3, 1fr);} }
     .k{
       border:1px solid rgba(0,0,0,.08);
       border-radius:14px;
@@ -28,16 +29,18 @@
       box-shadow: 0 1px 10px rgba(0,0,0,.04);
       position: relative;
       overflow: hidden;
+      min-height: 58px;
     }
     .k b{display:block; font-size:12px; color:rgba(0,0,0,.70); font-weight:800; letter-spacing:.2px}
     .k span{display:block; font-size:20px; margin-top:4px; font-weight:900}
+
     .note{font-size:12px; color:#555; margin-top:10px; line-height:1.35}
     canvas{width:100%; height:auto; border:1px solid #eee; border-radius:16px; background:white}
     .tiny{font-size:12px; color:#555; margin-top:8px}
     code{background:#f6f6f6; padding:2px 6px; border-radius:6px;}
 
     /* =========================
-       TIER STYLES (for LIFT CARDS)
+       TIER STYLES (Lift-Kacheln)
        ========================= */
     .tier-gray   { background: linear-gradient(135deg,#f3f4f6,#e5e7eb); color:#111; }
     .tier-bronze { background: linear-gradient(135deg,#fef3c7,#cd7f32); color:#111; }
@@ -46,12 +49,12 @@
     .tier-ruby   { background: linear-gradient(135deg,#7f1d1d,#ef4444); color:#fff; }
     .tier-god    { background: linear-gradient(135deg,#5b21b6,#a21caf,#f59e0b); color:#fff; }
 
-    /* subtle shine on tier cards (very light) */
-    .k.tier-ruby::after,
-    .k.tier-god::after,
-    .k.tier-gold::after,
+    /* leichter Shiny für farbige Lifts */
+    .k.tier-bronze::after,
     .k.tier-silver::after,
-    .k.tier-bronze::after {
+    .k.tier-gold::after,
+    .k.tier-ruby::after,
+    .k.tier-god::after{
       content:"";
       position:absolute;
       inset:-40%;
@@ -66,20 +69,17 @@
       animation: shineSweep 3.1s ease-in-out infinite;
       opacity:.6;
     }
-
     @keyframes shineSweep{
       0%   { transform: translateX(-70%) rotate(8deg); opacity:0; }
       20%  { opacity:.6; }
       50%  { transform: translateX(10%) rotate(8deg); opacity:.45; }
       100% { opacity:0; }
     }
-
-    /* keep label readable on dark tiers */
     .tier-ruby b, .tier-god b { color: rgba(255,255,255,.85); }
     .tier-ruby span, .tier-god span { color: #fff; }
 
     /* =========================
-       MEDAL (TOTAL)
+       MEDAILLE (TOTAL)
        ========================= */
     .medalWrap{ margin-top: 12px; display:flex; justify-content:center; }
     .medal {
@@ -108,18 +108,17 @@
     .medal .label {
       font-size: 11px;
       letter-spacing: .12em;
-      opacity: .9;
+      opacity: .92;
       margin-top: 8px;
       font-weight: 900;
     }
     .medal .meta {
       margin-top: 6px;
       font-size: 12px;
-      opacity: .88;
+      opacity: .90;
       font-weight: 700;
     }
-
-    /* shiny sweep on medal */
+    /* Shiny sweep */
     .medal::after {
       content: "";
       position: absolute;
@@ -140,7 +139,6 @@
       50% { transform: translateX(10%) rotate(8deg); opacity: .55; }
       100% { opacity: 0; }
     }
-
     /* medal tier colors */
     .medal.gray   { background: linear-gradient(135deg,#9ca3af,#6b7280); color:#111; }
     .medal.bronze { background: linear-gradient(135deg,#92400e,#d97706); color:#111; }
@@ -148,7 +146,6 @@
     .medal.gold   { background: linear-gradient(135deg,#a16207,#facc15); color:#111; }
     .medal.ruby   { background: linear-gradient(135deg,#7f1d1d,#ef4444); color:#fff; }
     .medal.god    { background: linear-gradient(135deg,#5b21b6,#a21caf,#f59e0b); color:#fff; }
-
     .medal.ruby .label, .medal.god .label, .medal.ruby .meta, .medal.god .meta {
       color: rgba(255,255,255,.90);
     }
@@ -168,7 +165,7 @@
       .row, .row3 { gap: 8px; }
 
       .kpi { gap: 6px; }
-      .k { padding: 8px; border-radius: 10px; }
+      .k { padding: 8px; border-radius: 10px; min-height: 52px; }
       .k span { font-size: 16px; }
 
       .medal { width: 140px; height: 140px; }
@@ -177,18 +174,21 @@
       .medal .meta { font-size: 11px; }
 
       canvas { border-radius: 14px; margin-top: 8px; }
-      #capsText { display: none; }
+      #capsText { display: none; } /* Caps/SDs ausblenden für Story-Screenshot */
       .tiny { font-size: 11px; }
     }
   </style>
 </head>
-<body>
-  <h1>National Strength Card </h1>
-  <p class="sub">
 
+<body>
+  <h1>National Strength Card – 100 = P99.5, 10 Punkte = 1 SD</h1>
+  <p class="sub">
+    Nutzer geben Squat/Bench/Deadlift ein, wählen Sex & Gewichtsklasse, und erhalten Scores + Radar-Chart (nur S/B/D).
+    Total wird als Medaille dargestellt. Formel: <code>Score = 100 + ((Wert − Cap_P99.5) / SD) · 10</code>.
   </p>
 
   <div class="grid">
+    <!-- LEFT -->
     <div class="card">
       <div class="row">
         <div>
@@ -231,9 +231,9 @@
       </div>
 
       <div class="kpi">
-        <div class="k" id="sCard"><b>Squat</b><span id="sScore">–</span></div>
-        <div class="k" id="bCard"><b>Bench</b><span id="bScore">–</span></div>
-        <div class="k" id="dCard"><b>Deadlift</b><span id="dScore">–</span></div>
+        <div class="k tier-gray" id="sCard"><b>Squat</b><span id="sScore">–</span></div>
+        <div class="k tier-gray" id="bCard"><b>Bench</b><span id="bScore">–</span></div>
+        <div class="k tier-gray" id="dCard"><b>Deadlift</b><span id="dScore">–</span></div>
       </div>
 
       <div class="medalWrap">
@@ -247,13 +247,14 @@
       <div class="note" id="capsText">Caps/SDs erscheinen nach „Berechnen“.</div>
     </div>
 
+    <!-- RIGHT -->
     <div class="card">
       <canvas id="radar" width="520" height="520"></canvas>
-      <div class="tiny">Anzeige-Skala: 50–110 (nur Darstellung).</div>
+      <div class="tiny">Anzeige-Skala: 50–110 (nur Darstellung). Radar zeigt nur Squat/Bench/Deadlift.</div>
     </div>
   </div>
 
-  <!-- Modal Ergebnis (pop-up) -->
+  <!-- MODAL -->
   <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; padding:18px;">
     <div style="width:min(960px, 100%); background:#fff; border-radius:16px; padding:16px; box-shadow:0 10px 40px rgba(0,0,0,.25)">
       <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
@@ -267,9 +268,9 @@
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:12px; align-items:start;">
         <div>
           <div class="kpi" style="grid-template-columns: repeat(3, 1fr);">
-            <div class="k" id="msCard"><b>Squat</b><span id="msScore">–</span></div>
-            <div class="k" id="mbCard"><b>Bench</b><span id="mbScore">–</span></div>
-            <div class="k" id="mdCard"><b>Deadlift</b><span id="mdScore">–</span></div>
+            <div class="k tier-gray" id="msCard"><b>Squat</b><span id="msScore">–</span></div>
+            <div class="k tier-gray" id="mbCard"><b>Bench</b><span id="mbScore">–</span></div>
+            <div class="k tier-gray" id="mdCard"><b>Deadlift</b><span id="mdScore">–</span></div>
           </div>
 
           <div class="medalWrap">
@@ -284,7 +285,7 @@
         </div>
 
         <div>
-          <canvas id="radarModal" width="460" height="460" style="width:100%; height:auto; border:1px solid #eee; border-radius:16px;"></canvas>
+          <canvas id="radarModal" width="460" height="460" style="width:100%; height:auto; border:1px solid #eee; border-radius:16px; background:white;"></canvas>
         </div>
       </div>
     </div>
@@ -292,39 +293,42 @@
 
 <script>
 /* =========================
-   DATA (Raw) – eingebettet
-   Männer 100 & 110 bewusst NICHT enthalten
+   DATA (Raw) – eingebettet.
+   Männer 100 & 110 bewusst NICHT enthalten.
    ========================= */
 const data = {
   "M": {
-    "53": {"S_cap":190,"S_sd":26.13,"B_cap":127.95,"B_sd":19.05,"D_cap":220,"D_sd":34.97,"T_cap":496.89,"T_sd":85.38},
-    "59": {"S_cap":217.5,"S_sd":29.62,"B_cap":147.5,"B_sd":20.18,"D_cap":252.5,"D_sd":35.36,"T_cap":570,"T_sd":90.79},
-    "66": {"S_cap":240,"S_sd":31.12,"B_cap":162.5,"B_sd":20.57,"D_cap":277.5,"D_sd":35.92,"T_cap":630,"T_sd":93.66},
-    "74": {"S_cap":262.5,"S_sd":33.83,"B_cap":177.5,"B_sd":22.69,"D_cap":300,"D_sd":36.4,"T_cap":685,"T_sd":95.32},
-    "83": {"S_cap":282.5,"S_sd":36.2,"B_cap":190,"B_sd":25.61,"D_cap":317.5,"D_sd":38.05,"T_cap":735,"T_sd":96.95},
-    "93": {"S_cap":297.5,"S_sd":36.15,"B_cap":207.5,"B_sd":25.70,"D_cap":327.5,"D_sd":37.33,"T_cap":802.5,"T_sd":94.09},
+    "53":  {"S_cap":190,"S_sd":26.13,"B_cap":127.95,"B_sd":19.05,"D_cap":220,"D_sd":34.97,"T_cap":496.89,"T_sd":85.38},
+    "59":  {"S_cap":217.5,"S_sd":29.62,"B_cap":147.5,"B_sd":20.18,"D_cap":252.5,"D_sd":35.36,"T_cap":570,"T_sd":90.79},
+    "66":  {"S_cap":240,"S_sd":31.12,"B_cap":162.5,"B_sd":20.57,"D_cap":277.5,"D_sd":35.92,"T_cap":630,"T_sd":93.66},
+    "74":  {"S_cap":262.5,"S_sd":33.83,"B_cap":177.5,"B_sd":22.69,"D_cap":300,"D_sd":36.4,"T_cap":685,"T_sd":95.32},
+    "83":  {"S_cap":282.5,"S_sd":36.2,"B_cap":190,"B_sd":25.61,"D_cap":317.5,"D_sd":38.05,"T_cap":735,"T_sd":96.95},
+    "93":  {"S_cap":297.5,"S_sd":36.15,"B_cap":207.5,"B_sd":25.70,"D_cap":327.5,"D_sd":37.33,"T_cap":802.5,"T_sd":94.09},
     "105": {"S_cap":320,"S_sd":40.56,"B_cap":221,"B_sd":28.72,"D_cap":345,"D_sd":39.15,"T_cap":850,"T_sd":98.98},
     "120": {"S_cap":342.5,"S_sd":44.12,"B_cap":240,"B_sd":32.02,"D_cap":359.5,"D_sd":41.64,"T_cap":900,"T_sd":112.39},
     "120+": {"S_cap":402.5,"S_sd":54.62,"B_cap":260,"B_sd":36.7,"D_cap":366.1,"D_sd":45.1,"T_cap":980,"T_sd":130.9}
   },
   "F": {
-    "43": {"S_cap":119.3,"S_sd":18.24,"B_cap":73.1,"B_sd":11.03,"D_cap":146.3,"D_sd":20.93,"T_cap":328.1,"T_sd":49.54},
-    "47": {"S_cap":143.2,"S_sd":21.59,"B_cap":93,"B_sd":13.83,"D_cap":172.5,"D_sd":23.72,"T_cap":399.4,"T_sd":57.26},
-    "52": {"S_cap":157.5,"S_sd":20.2,"B_cap":100,"B_sd":14.57,"D_cap":183.5,"D_sd":24.21,"T_cap":420,"T_sd":59.97},
-    "57": {"S_cap":167.5,"S_sd":23.23,"B_cap":107.5,"B_sd":12.34,"D_cap":192.5,"D_sd":24.29,"T_cap":450,"T_sd":60.12},
-    "63": {"S_cap":185,"S_sd":23.66,"B_cap":115,"B_sd":13.44,"D_cap":205,"D_sd":25.44,"T_cap":485,"T_sd":65.41},
-    "69": {"S_cap":197.5,"S_sd":25.72,"B_cap":122.5,"B_sd":14.48,"D_cap":217.5,"D_sd":26.48,"T_cap":520,"T_sd":72.27},
-    "76": {"S_cap":210,"S_sd":26.75,"B_cap":130,"B_sd":15.83,"D_cap":232.5,"D_sd":27.78,"T_cap":555,"T_sd":76.57},
-    "84": {"S_cap":225,"S_sd":27.48,"B_cap":137.5,"B_sd":16.59,"D_cap":245,"D_sd":28.74,"T_cap":590,"T_sd":80.49},
+    "43":  {"S_cap":119.3,"S_sd":18.24,"B_cap":73.1,"B_sd":11.03,"D_cap":146.3,"D_sd":20.93,"T_cap":328.1,"T_sd":49.54},
+    "47":  {"S_cap":143.2,"S_sd":21.59,"B_cap":93,"B_sd":13.83,"D_cap":172.5,"D_sd":23.72,"T_cap":399.4,"T_sd":57.26},
+    "52":  {"S_cap":157.5,"S_sd":20.2,"B_cap":100,"B_sd":14.57,"D_cap":183.5,"D_sd":24.21,"T_cap":420,"T_sd":59.97},
+    "57":  {"S_cap":167.5,"S_sd":23.23,"B_cap":107.5,"B_sd":12.34,"D_cap":192.5,"D_sd":24.29,"T_cap":450,"T_sd":60.12},
+    "63":  {"S_cap":185,"S_sd":23.66,"B_cap":115,"B_sd":13.44,"D_cap":205,"D_sd":25.44,"T_cap":485,"T_sd":65.41},
+    "69":  {"S_cap":197.5,"S_sd":25.72,"B_cap":122.5,"B_sd":14.48,"D_cap":217.5,"D_sd":26.48,"T_cap":520,"T_sd":72.27},
+    "76":  {"S_cap":210,"S_sd":26.75,"B_cap":130,"B_sd":15.83,"D_cap":232.5,"D_sd":27.78,"T_cap":555,"T_sd":76.57},
+    "84":  {"S_cap":225,"S_sd":27.48,"B_cap":137.5,"B_sd":16.59,"D_cap":245,"D_sd":28.74,"T_cap":590,"T_sd":80.49},
     "84+": {"S_cap":240,"S_sd":30.12,"B_cap":145,"B_sd":18.01,"D_cap":260,"D_sd":31.08,"T_cap":625,"T_sd":90.03}
   }
 };
 
-const sexEl = document.getElementById('sex');
-const wcEl = document.getElementById('wc');
+/* =========================
+   DOM (IDs müssen existieren)
+   ========================= */
+const sexEl   = document.getElementById('sex');
+const wcEl    = document.getElementById('wc');
 const squatEl = document.getElementById('squat');
 const benchEl = document.getElementById('bench');
-const deadEl = document.getElementById('deadlift');
+const deadEl  = document.getElementById('deadlift');
 const totalEl = document.getElementById('total');
 
 const sScoreEl = document.getElementById('sScore');
@@ -332,15 +336,37 @@ const bScoreEl = document.getElementById('bScore');
 const dScoreEl = document.getElementById('dScore');
 const tScoreEl = document.getElementById('tScore');
 const tMetaEl  = document.getElementById('tMeta');
+
 const capsTextEl = document.getElementById('capsText');
+
+const sCard = document.getElementById('sCard');
+const bCard = document.getElementById('bCard');
+const dCard = document.getElementById('dCard');
+
+const totalMedal = document.getElementById('totalMedal');
 
 const modal = document.getElementById('modal');
 const closeBtn = document.getElementById('closeBtn');
 const calcBtn = document.getElementById('calcBtn');
 
-let currentRadarStroke = 'rgba(0,0,0,0.85)';
-let currentRadarFill   = 'rgba(0,0,0,0.12)';
+const msScoreEl = document.getElementById('msScore');
+const mbScoreEl = document.getElementById('mbScore');
+const mdScoreEl = document.getElementById('mdScore');
+const mtScoreEl = document.getElementById('mtScore');
+const mtMetaEl  = document.getElementById('mtMeta');
 
+const msCard = document.getElementById('msCard');
+const mbCard = document.getElementById('mbCard');
+const mdCard = document.getElementById('mdCard');
+
+const mTotalMedal = document.getElementById('mTotalMedal');
+
+const modalMetaEl = document.getElementById('modalMeta');
+const modalCapsEl = document.getElementById('modalCaps');
+
+/* =========================
+   Utils
+   ========================= */
 function fmt(n){
   if (!Number.isFinite(n)) return '–';
   return (Math.round(n*10)/10).toFixed(1);
@@ -356,14 +382,16 @@ function updateTotalOnly(){
 
 function updateWCOptions(){
   const sex = sexEl.value;
-  const wcs = Object.keys(data[sex]||{});
+  const wcs = Object.keys(data[sex] || {});
+  wcEl.innerHTML = '';
+
   wcs.sort((a,b)=>{
     const an = parseFloat(String(a).replace('+',''));
     const bn = parseFloat(String(b).replace('+',''));
     if (an !== bn) return an - bn;
     return (String(a).includes('+')?1:0) - (String(b).includes('+')?1:0);
   });
-  wcEl.innerHTML = '';
+
   for (const wc of wcs){
     const opt = document.createElement('option');
     opt.value = wc;
@@ -380,7 +408,7 @@ function clamp(x, lo, hi){
   return Math.max(lo, Math.min(hi, x));
 }
 
-/* Tier buckets per your ranges */
+/* Tier-Definition */
 function tierKeyFromScore(sc){
   if (!Number.isFinite(sc)) return 'gray';
   if (sc > 100) return 'god';
@@ -391,18 +419,224 @@ function tierKeyFromScore(sc){
   return 'gray';
 }
 
-/* Radar colors should match TOTAL tier (solid colors) */
+function setLiftCardTier(cardEl, tier){
+  cardEl.classList.remove('tier-gray','tier-bronze','tier-silver','tier-gold','tier-ruby','tier-god');
+  cardEl.classList.add('tier-' + tier);
+}
+
+function setMedalTier(medalEl, tier){
+  medalEl.classList.remove('gray','bronze','silver','gold','ruby','god');
+  medalEl.classList.add(tier);
+}
+
+/* Radar-Farben gekoppelt an TOTAL */
 function radarColorsForTier(tier){
   switch(tier){
-    case 'god':    return {stroke:'rgba(88,28,135,0.95)', fill:'rgba(88,28,135,0.22)'};   // violet
-    case 'ruby':   return {stroke:'rgba(185,28,28,0.95)', fill:'rgba(185,28,28,0.22)'};  // red
-    case 'gold':   return {stroke:'rgba(161,98,7,0.95)', fill:'rgba(161,98,7,0.22)'};    // gold-ish
-    case 'silver': return {stroke:'rgba(107,114,128,0.95)', fill:'rgba(107,114,128,0.20)'}; // gray
-    case 'bronze': return {stroke:'rgba(146,64,14,0.95)', fill:'rgba(146,64,14,0.22)'};  // bronze
-    default:       return {stroke:'rgba(55,65,81,0.85)', fill:'rgba(55,65,81,0.14)'};    // slate
+    case 'god':    return {stroke:'rgba(88,28,135,0.95)',  fill:'rgba(88,28,135,0.22)'};
+    case 'ruby':   return {stroke:'rgba(185,28,28,0.95)',  fill:'rgba(185,28,28,0.22)'};
+    case 'gold':   return {stroke:'rgba(161,98,7,0.95)',   fill:'rgba(161,98,7,0.22)'};
+    case 'silver': return {stroke:'rgba(107,114,128,0.95)',fill:'rgba(107,114,128,0.20)'};
+    case 'bronze': return {stroke:'rgba(146,64,14,0.95)',  fill:'rgba(146,64,14,0.22)'};
+    default:       return {stroke:'rgba(55,65,81,0.85)',   fill:'rgba(55,65,81,0.14)'};
   }
 }
 
-/* Apply tier classes to lift cards */
-function setLiftCardTier(cardEl, tier){
-  cardEl
+/* =========================
+   Radar (3 Achsen: S/B/D)
+   ========================= */
+let currentRadarStroke = 'rgba(0,0,0,0.85)';
+let currentRadarFill   = 'rgba(0,0,0,0.12)';
+
+function drawRadarOn(canvasId, scores){
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const labels = ['Squat','Bench','Deadlift'];
+  const minV = 50, maxV = 110;
+  const cx = W/2, cy = H/2;
+  const R = Math.min(W,H)*0.38;
+
+  // rings
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.lineWidth = 1;
+  const rings = [50,60,70,80,90,100,110];
+  for (const v of rings){
+    const r = R * ((v - minV) / (maxV - minV));
+    ctx.beginPath();
+    for (let i=0;i<labels.length;i++){
+      const a = -Math.PI/2 + i*(2*Math.PI/labels.length);
+      const x = cx + r*Math.cos(a);
+      const y = cy + r*Math.sin(a);
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  // axes + labels
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+  for (let i=0;i<labels.length;i++){
+    const a = -Math.PI/2 + i*(2*Math.PI/labels.length);
+    const x = cx + R*Math.cos(a);
+    const y = cy + R*Math.sin(a);
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(x,y);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.font = '14px system-ui';
+    const tx = cx + (R+22)*Math.cos(a);
+    const ty = cy + (R+22)*Math.sin(a);
+    ctx.fillText(labels[i], tx - 18, ty + 6);
+  }
+
+  // polygon
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = currentRadarStroke;
+  ctx.fillStyle = currentRadarFill;
+
+  ctx.beginPath();
+  for (let i=0;i<labels.length;i++){
+    const v = clamp(scores[i], minV, maxV);
+    const r = R * ((v - minV) / (maxV - minV));
+    const a = -Math.PI/2 + i*(2*Math.PI/labels.length);
+    const x = cx + r*Math.cos(a);
+    const y = cy + r*Math.sin(a);
+    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+}
+
+/* =========================
+   Clear / Reset
+   ========================= */
+function clearOutputs(){
+  sScoreEl.textContent = '–';
+  bScoreEl.textContent = '–';
+  dScoreEl.textContent = '–';
+  tScoreEl.textContent = '–';
+  tMetaEl.textContent  = '—';
+
+  setLiftCardTier(sCard, 'gray');
+  setLiftCardTier(bCard, 'gray');
+  setLiftCardTier(dCard, 'gray');
+  setMedalTier(totalMedal, 'gray');
+
+  capsTextEl.textContent = 'Caps/SDs erscheinen nach „Berechnen“.';
+
+  currentRadarStroke = 'rgba(0,0,0,0.85)';
+  currentRadarFill   = 'rgba(0,0,0,0.12)';
+  drawRadarOn('radar', [50,50,50]);
+}
+
+/* =========================
+   Modal close
+   ========================= */
+closeBtn.addEventListener('click', ()=>{ modal.style.display='none'; });
+modal.addEventListener('click', (e)=>{ if (e.target === modal) modal.style.display='none'; });
+
+/* =========================
+   Calculate
+   ========================= */
+calcBtn.addEventListener('click', ()=>{
+  const sex = sexEl.value;
+  const wc = wcEl.value;
+  const ref = (data[sex] || {})[wc];
+
+  if (!ref){
+    alert('Keine Daten für diese Auswahl.');
+    return;
+  }
+
+  const S = parseFloat(squatEl.value||'0');
+  const B = parseFloat(benchEl.value||'0');
+  const D = parseFloat(deadEl.value||'0');
+  const T = S+B+D;
+  totalEl.value = (Math.round(T*2)/2).toFixed(1);
+
+  const sSc = score(S, ref.S_cap, ref.S_sd);
+  const bSc = score(B, ref.B_cap, ref.B_sd);
+  const dSc = score(D, ref.D_cap, ref.D_sd);
+  const tSc = score(T, ref.T_cap, ref.T_sd);
+
+  // Text
+  sScoreEl.textContent = fmt(sSc);
+  bScoreEl.textContent = fmt(bSc);
+  dScoreEl.textContent = fmt(dSc);
+  tScoreEl.textContent = fmt(tSc);
+  tMetaEl.textContent  = `Total (kg): ${fmt(T)}`;
+
+  // Lift tiers (individuell)
+  setLiftCardTier(sCard, tierKeyFromScore(sSc));
+  setLiftCardTier(bCard, tierKeyFromScore(bSc));
+  setLiftCardTier(dCard, tierKeyFromScore(dSc));
+
+  // Total tier -> Medal + Radar color
+  const tTier = tierKeyFromScore(tSc);
+  setMedalTier(totalMedal, tTier);
+  const rc = radarColorsForTier(tTier);
+  currentRadarStroke = rc.stroke;
+  currentRadarFill   = rc.fill;
+
+  // Caps/SDs (Desktop sichtbar, Mobile hidden)
+  capsTextEl.innerHTML =
+    `Caps (P99.5=100): S ${ref.S_cap} / B ${ref.B_cap} / D ${ref.D_cap} / T ${ref.T_cap}<br>`+
+    `SD (10 Punkte = 1 SD): S ${ref.S_sd} / B ${ref.B_sd} / D ${ref.D_sd} / T ${ref.T_sd}`;
+
+  // Radar main
+  drawRadarOn('radar', [sSc,bSc,dSc]);
+
+  // Modal fill
+  msScoreEl.textContent = fmt(sSc);
+  mbScoreEl.textContent = fmt(bSc);
+  mdScoreEl.textContent = fmt(dSc);
+  mtScoreEl.textContent = fmt(tSc);
+  mtMetaEl.textContent  = `Total (kg): ${fmt(T)}`;
+
+  setLiftCardTier(msCard, tierKeyFromScore(sSc));
+  setLiftCardTier(mbCard, tierKeyFromScore(bSc));
+  setLiftCardTier(mdCard, tierKeyFromScore(dSc));
+  setMedalTier(mTotalMedal, tTier);
+
+  modalMetaEl.textContent = `${sex==='M'?'Männer':'Frauen'} · ${wc} kg · Raw`;
+  modalCapsEl.innerHTML =
+    `Eingaben: S ${fmt(S)} / B ${fmt(B)} / D ${fmt(D)} / T ${fmt(T)}<br>`+
+    `Caps (P99.5=100): S ${ref.S_cap} / B ${ref.B_cap} / D ${ref.D_cap} / T ${ref.T_cap}<br>`+
+    `SD (10 Punkte = 1 SD): S ${ref.S_sd} / B ${ref.B_sd} / D ${ref.D_sd} / T ${ref.T_sd}`;
+
+  // modal radar uses same radar colors
+  drawRadarOn('radarModal', [sSc,bSc,dSc]);
+
+  modal.style.display='flex';
+});
+
+/* =========================
+   Wiring
+   ========================= */
+sexEl.addEventListener('change', ()=>{ updateWCOptions(); clearOutputs(); });
+wcEl.addEventListener('change', clearOutputs);
+[squatEl, benchEl, deadEl].forEach(el => el.addEventListener('input', updateTotalOnly));
+
+/* =========================
+   Init (stabil)
+   ========================= */
+function init(){
+  updateWCOptions();
+  updateTotalOnly();
+  clearOutputs();
+}
+
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
+
