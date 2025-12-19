@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>National Strength Card</title>
+  <title>National Strength Card (P99.5) – Rechner</title>
   <style>
     :root{font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#111;}
     body{margin:24px; max-width: 980px;}
@@ -19,71 +19,174 @@
     .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
     .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
     .kpi{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;}
-    .k{border:1px solid #eee; border-radius:14px; padding:10px 12px; background:#fafafa}
-    .k b{display:block; font-size:12px; color:#444; font-weight:600}
-    .k span{display:block; font-size:20px; margin-top:4px}
+    @media (max-width: 760px){.kpi{grid-template-columns: repeat(3, 1fr);} }
+    .k{
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fafafa;
+      box-shadow: 0 1px 10px rgba(0,0,0,.04);
+      position: relative;
+      overflow: hidden;
+    }
+    .k b{display:block; font-size:12px; color:rgba(0,0,0,.70); font-weight:800; letter-spacing:.2px}
+    .k span{display:block; font-size:20px; margin-top:4px; font-weight:900}
     .note{font-size:12px; color:#555; margin-top:10px; line-height:1.35}
     canvas{width:100%; height:auto; border:1px solid #eee; border-radius:16px; background:white}
     .tiny{font-size:12px; color:#555; margin-top:8px}
     code{background:#f6f6f6; padding:2px 6px; border-radius:6px;}
 
-    /* Total Badge / Medal */
-    .badgeWrap{margin-top:12px;}
-    .badge{
-      border:1px solid rgba(0,0,0,.08);
-      border-radius:18px;
-      padding:14px 16px;
-      background:#fafafa;
-      box-shadow:
-        inset 0 0 0 2px rgba(255,255,255,.22),
-        0 8px 24px rgba(0,0,0,.12);
-      color:#111;
-      position:relative;
-      overflow:hidden;
-    }
-    .badgeTop{display:flex; align-items:baseline; justify-content:space-between; gap:10px;}
-    .badgeLabel{font-size:12px; color:rgba(0,0,0,.75); font-weight:800; letter-spacing:.3px;}
-    .badgeScore{font-size:34px; font-weight:900; line-height:1;}
-    .badgeMeta{margin-top:8px; font-size:12px; color:rgba(0,0,0,.75); opacity:.95;}
+    /* =========================
+       TIER STYLES (for LIFT CARDS)
+       ========================= */
+    .tier-gray   { background: linear-gradient(135deg,#f3f4f6,#e5e7eb); color:#111; }
+    .tier-bronze { background: linear-gradient(135deg,#fef3c7,#cd7f32); color:#111; }
+    .tier-silver { background: linear-gradient(135deg,#f3f4f6,#c0c0c0); color:#111; }
+    .tier-gold   { background: linear-gradient(135deg,#fff7cc,#d4af37); color:#111; }
+    .tier-ruby   { background: linear-gradient(135deg,#7f1d1d,#ef4444); color:#fff; }
+    .tier-god    { background: linear-gradient(135deg,#5b21b6,#a21caf,#f59e0b); color:#fff; }
 
-    /* Shiny overlay */
-    .shiny::before{
+    /* subtle shine on tier cards (very light) */
+    .k.tier-ruby::after,
+    .k.tier-god::after,
+    .k.tier-gold::after,
+    .k.tier-silver::after,
+    .k.tier-bronze::after {
       content:"";
       position:absolute;
       inset:-40%;
       background: linear-gradient(120deg,
         rgba(255,255,255,0) 35%,
-        rgba(255,255,255,.25) 45%,
+        rgba(255,255,255,.22) 45%,
         rgba(255,255,255,0) 55%
       );
       transform: translateX(-60%) rotate(8deg);
       pointer-events:none;
       filter: blur(0.6px);
-      animation: shineSweep 2.8s ease-in-out infinite;
-      opacity:.9;
+      animation: shineSweep 3.1s ease-in-out infinite;
+      opacity:.6;
     }
-    .shiny::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background-image: radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px);
-      background-size: 6px 6px;
-      opacity:.12;
-      pointer-events:none;
-      mix-blend-mode: overlay;
-    }
+
     @keyframes shineSweep{
       0%   { transform: translateX(-70%) rotate(8deg); opacity:0; }
-      20%  { opacity:.9; }
-      50%  { transform: translateX(10%) rotate(8deg); opacity:.7; }
-      80%  { opacity:0; }
-      100% { transform: translateX(10%) rotate(8deg); opacity:0; }
+      20%  { opacity:.6; }
+      50%  { transform: translateX(10%) rotate(8deg); opacity:.45; }
+      100% { opacity:0; }
+    }
+
+    /* keep label readable on dark tiers */
+    .tier-ruby b, .tier-god b { color: rgba(255,255,255,.85); }
+    .tier-ruby span, .tier-god span { color: #fff; }
+
+    /* =========================
+       MEDAL (TOTAL)
+       ========================= */
+    .medalWrap{ margin-top: 12px; display:flex; justify-content:center; }
+    .medal {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        inset 0 0 0 6px rgba(255,255,255,.22),
+        inset 0 -10px 18px rgba(0,0,0,.25),
+        0 14px 28px rgba(0,0,0,.22);
+      border: 1px solid rgba(0,0,0,.10);
+      text-align:center;
+    }
+    .medal .value {
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: .5px;
+    }
+    .medal .label {
+      font-size: 11px;
+      letter-spacing: .12em;
+      opacity: .9;
+      margin-top: 8px;
+      font-weight: 900;
+    }
+    .medal .meta {
+      margin-top: 6px;
+      font-size: 12px;
+      opacity: .88;
+      font-weight: 700;
+    }
+
+    /* shiny sweep on medal */
+    .medal::after {
+      content: "";
+      position: absolute;
+      inset: -35%;
+      background: linear-gradient(
+        120deg,
+        transparent 35%,
+        rgba(255,255,255,.40) 45%,
+        transparent 55%
+      );
+      transform: translateX(-60%) rotate(8deg);
+      animation: shineMedal 3s infinite ease-in-out;
+      pointer-events:none;
+    }
+    @keyframes shineMedal {
+      0% { transform: translateX(-70%) rotate(8deg); opacity: 0; }
+      20% { opacity: .95; }
+      50% { transform: translateX(10%) rotate(8deg); opacity: .55; }
+      100% { opacity: 0; }
+    }
+
+    /* medal tier colors */
+    .medal.gray   { background: linear-gradient(135deg,#9ca3af,#6b7280); color:#111; }
+    .medal.bronze { background: linear-gradient(135deg,#92400e,#d97706); color:#111; }
+    .medal.silver { background: linear-gradient(135deg,#9ca3af,#e5e7eb); color:#111; }
+    .medal.gold   { background: linear-gradient(135deg,#a16207,#facc15); color:#111; }
+    .medal.ruby   { background: linear-gradient(135deg,#7f1d1d,#ef4444); color:#fff; }
+    .medal.god    { background: linear-gradient(135deg,#5b21b6,#a21caf,#f59e0b); color:#fff; }
+
+    .medal.ruby .label, .medal.god .label, .medal.ruby .meta, .medal.god .meta {
+      color: rgba(255,255,255,.90);
+    }
+
+    /* =========================
+       MOBILE / STORY MODE
+       ========================= */
+    @media (max-width: 430px) {
+      body { margin: 12px; }
+      h1 { font-size: 16px; line-height: 1.2; }
+      .sub { font-size: 11px; margin-bottom: 10px; }
+      .grid { gap: 12px; }
+      .card { padding: 12px; border-radius: 14px; }
+
+      label { font-size: 11px; margin: 6px 0 4px; }
+      select, input, button { padding: 8px 10px; font-size: 13px; border-radius: 10px; }
+      .row, .row3 { gap: 8px; }
+
+      .kpi { gap: 6px; }
+      .k { padding: 8px; border-radius: 10px; }
+      .k span { font-size: 16px; }
+
+      .medal { width: 140px; height: 140px; }
+      .medal .value { font-size: 34px; }
+      .medal .label { font-size: 10px; }
+      .medal .meta { font-size: 11px; }
+
+      canvas { border-radius: 14px; margin-top: 8px; }
+      #capsText { display: none; }
+      .tiny { font-size: 11px; }
     }
   </style>
 </head>
 <body>
   <h1>National Strength Card – 100 = P99.5, 10 Punkte = 1 SD</h1>
   <p class="sub">
+    Nutzer geben Squat/Bench/Deadlift ein, wählen Sex & Gewichtsklasse, und erhalten Scores + Radar-Chart (nur S/B/D).
+    Total wird als Medaille dargestellt. Formel: <code>Score = 100 + ((Wert − Cap_P99.5) / SD) · 10</code>.
   </p>
 
   <div class="grid">
@@ -129,18 +232,16 @@
       </div>
 
       <div class="kpi">
-        <div class="k"><b>Squat</b><span id="sScore">–</span></div>
-        <div class="k"><b>Bench</b><span id="bScore">–</span></div>
-        <div class="k"><b>Deadlift</b><span id="dScore">–</span></div>
+        <div class="k" id="sCard"><b>Squat</b><span id="sScore">–</span></div>
+        <div class="k" id="bCard"><b>Bench</b><span id="bScore">–</span></div>
+        <div class="k" id="dCard"><b>Deadlift</b><span id="dScore">–</span></div>
       </div>
 
-      <div class="badgeWrap">
-        <div class="badge shiny" id="totalBadge">
-          <div class="badgeTop">
-            <div class="badgeLabel">TOTAL SCORE</div>
-            <div class="badgeScore" id="tScore">–</div>
-          </div>
-          <div class="badgeMeta" id="tMeta">—</div>
+      <div class="medalWrap">
+        <div id="totalMedal" class="medal gray">
+          <div class="value" id="tScore">–</div>
+          <div class="label">TOTAL SCORE</div>
+          <div class="meta" id="tMeta">—</div>
         </div>
       </div>
 
@@ -158,7 +259,7 @@
     <div style="width:min(960px, 100%); background:#fff; border-radius:16px; padding:16px; box-shadow:0 10px 40px rgba(0,0,0,.25)">
       <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
         <div>
-          <div style="font-weight:800; font-size:16px;">Deine National Strength Card</div>
+          <div style="font-weight:900; font-size:16px;">Deine National Strength Card</div>
           <div style="color:#444; font-size:12px; margin-top:2px;" id="modalMeta">–</div>
         </div>
         <button id="closeBtn" style="border:1px solid #ddd; background:#fff; color:#111; border-radius:12px; padding:8px 10px; cursor:pointer;">Schließen</button>
@@ -167,18 +268,16 @@
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:12px; align-items:start;">
         <div>
           <div class="kpi" style="grid-template-columns: repeat(3, 1fr);">
-            <div class="k"><b>Squat</b><span id="msScore">–</span></div>
-            <div class="k"><b>Bench</b><span id="mbScore">–</span></div>
-            <div class="k"><b>Deadlift</b><span id="mdScore">–</span></div>
+            <div class="k" id="msCard"><b>Squat</b><span id="msScore">–</span></div>
+            <div class="k" id="mbCard"><b>Bench</b><span id="mbScore">–</span></div>
+            <div class="k" id="mdCard"><b>Deadlift</b><span id="mdScore">–</span></div>
           </div>
 
-          <div class="badgeWrap">
-            <div class="badge shiny" id="mTotalBadge">
-              <div class="badgeTop">
-                <div class="badgeLabel">TOTAL SCORE</div>
-                <div class="badgeScore" id="mtScore">–</div>
-              </div>
-              <div class="badgeMeta" id="mtMeta">—</div>
+          <div class="medalWrap">
+            <div id="mTotalMedal" class="medal gray">
+              <div class="value" id="mtScore">–</div>
+              <div class="label">TOTAL SCORE</div>
+              <div class="meta" id="mtMeta">—</div>
             </div>
           </div>
 
@@ -193,8 +292,10 @@
   </div>
 
 <script>
-// Caps/SDs (Raw) – eingebettet.
-// Hinweis: Männer 100 & 110 sind bewusst NICHT enthalten.
+/* =========================
+   DATA (Raw) – eingebettet
+   Männer 100 & 110 bewusst NICHT enthalten
+   ========================= */
 const data = {
   "M": {
     "53": {"S_cap":190,"S_sd":26.13,"B_cap":127.95,"B_sd":19.05,"D_cap":220,"D_sd":34.97,"T_cap":496.89,"T_sd":85.38},
@@ -238,6 +339,9 @@ const modal = document.getElementById('modal');
 const closeBtn = document.getElementById('closeBtn');
 const calcBtn = document.getElementById('calcBtn');
 
+let currentRadarStroke = 'rgba(0,0,0,0.85)';
+let currentRadarFill   = 'rgba(0,0,0,0.12)';
+
 function fmt(n){
   if (!Number.isFinite(n)) return '–';
   return (Math.round(n*10)/10).toFixed(1);
@@ -277,180 +381,29 @@ function clamp(x, lo, hi){
   return Math.max(lo, Math.min(hi, x));
 }
 
-// Total badge colors (only color, no labels/quotes)
-function totalTheme(tScore){
-  // <70 grey, 70–80 bronze, 80–90 silver, 90–95 gold, 95–100 special, 100+ god
-  if (!Number.isFinite(tScore)) return {bg:'#fafafa', fg:'#111', meta:'rgba(0,0,0,.75)'};
-  if (tScore >= 100) return {bg:'linear-gradient(135deg,#5b21b6,#a21caf,#f59e0b)', fg:'#fff', meta:'rgba(255,255,255,.9)'};
-  if (tScore >= 95)  return {bg:'linear-gradient(135deg,#4c1d95,#7c3aed)', fg:'#fff', meta:'rgba(255,255,255,.9)'};
-  if (tScore >= 90)  return {bg:'#d4af37', fg:'#111', meta:'rgba(0,0,0,.78)'};
-  if (tScore >= 80)  return {bg:'#c0c0c0', fg:'#111', meta:'rgba(0,0,0,.78)'};
-  if (tScore >= 70)  return {bg:'#cd7f32', fg:'#111', meta:'rgba(0,0,0,.78)'};
-  return {bg:'#9aa0a6', fg:'#111', meta:'rgba(0,0,0,.78)'};
+/* Tier buckets per your ranges */
+function tierKeyFromScore(sc){
+  if (!Number.isFinite(sc)) return 'gray';
+  if (sc > 100) return 'god';
+  if (sc >= 95) return 'ruby';
+  if (sc >= 90) return 'gold';
+  if (sc >= 80) return 'silver';
+  if (sc >= 70) return 'bronze';
+  return 'gray';
 }
 
-function paintTotalBadge(isModal, tSc, totalKg){
-  const badge = document.getElementById(isModal ? 'mTotalBadge' : 'totalBadge');
-  const scoreEl = document.getElementById(isModal ? 'mtScore' : 'tScore');
-  const metaEl  = document.getElementById(isModal ? 'mtMeta' : 'tMeta');
-
-  scoreEl.textContent = fmt(tSc);
-  metaEl.textContent = Number.isFinite(totalKg) ? `Total (kg): ${fmt(totalKg)}` : '—';
-
-  const th = totalTheme(tSc);
-  badge.style.background = th.bg;
-  badge.style.color = th.fg;
-
-  // ensure the label/meta look correct on dark gradients
-  const label = badge.querySelector('.badgeLabel');
-  if (label) label.style.color = th.fg;
-  metaEl.style.color = th.meta;
-}
-
-function drawRadarOn(canvasId, scores){
-  const canvas = document.getElementById(canvasId);
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  ctx.clearRect(0,0,W,H);
-
-  const labels = ['Squat','Bench','Deadlift']; // ONLY 3 axes
-  const minV = 50, maxV = 110;
-  const cx = W/2, cy = H/2;
-  const R = Math.min(W,H)*0.38;
-
-  // grid rings
-  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-  ctx.lineWidth = 1;
-  const rings = [50,60,70,80,90,100,110];
-  for (const v of rings){
-    const r = R * ((v - minV) / (maxV - minV));
-    ctx.beginPath();
-    for (let i=0;i<labels.length;i++){
-      const a = -Math.PI/2 + i*(2*Math.PI/labels.length);
-      const x = cx + r*Math.cos(a);
-      const y = cy + r*Math.sin(a);
-      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    }
-    ctx.closePath();
-    ctx.stroke();
+/* Radar colors should match TOTAL tier (solid colors) */
+function radarColorsForTier(tier){
+  switch(tier){
+    case 'god':    return {stroke:'rgba(88,28,135,0.95)', fill:'rgba(88,28,135,0.22)'};   // violet
+    case 'ruby':   return {stroke:'rgba(185,28,28,0.95)', fill:'rgba(185,28,28,0.22)'};  // red
+    case 'gold':   return {stroke:'rgba(161,98,7,0.95)', fill:'rgba(161,98,7,0.22)'};    // gold-ish
+    case 'silver': return {stroke:'rgba(107,114,128,0.95)', fill:'rgba(107,114,128,0.20)'}; // gray
+    case 'bronze': return {stroke:'rgba(146,64,14,0.95)', fill:'rgba(146,64,14,0.22)'};  // bronze
+    default:       return {stroke:'rgba(55,65,81,0.85)', fill:'rgba(55,65,81,0.14)'};    // slate
   }
-
-  // axes + labels
-  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-  for (let i=0;i<labels.length;i++){
-    const a = -Math.PI/2 + i*(2*Math.PI/labels.length);
-    const x = cx + R*Math.cos(a);
-    const y = cy + R*Math.sin(a);
-    ctx.beginPath();
-    ctx.moveTo(cx,cy);
-    ctx.lineTo(x,y);
-    ctx.stroke();
-
-    ctx.fillStyle = 'rgba(0,0,0,0.75)';
-    ctx.font = '14px system-ui';
-    const tx = cx + (R+22)*Math.cos(a);
-    const ty = cy + (R+22)*Math.sin(a);
-    ctx.fillText(labels[i], tx - 18, ty + 6);
-  }
-
-  // polygon
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-  ctx.fillStyle = 'rgba(0,0,0,0.12)';
-  ctx.beginPath();
-  for (let i=0;i<labels.length;i++){
-    const v = clamp(scores[i], minV, maxV);
-    const r = R * ((v - minV) / (maxV - minV));
-    const a = -Math.PI/2 + i*(2*Math.PI/labels.length);
-    const x = cx + r*Math.cos(a);
-    const y = cy + r*Math.sin(a);
-    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
 }
 
-function clearOutputs(){
-  sScoreEl.textContent = bScoreEl.textContent = dScoreEl.textContent = '–';
-  tScoreEl.textContent = '–';
-  tMetaEl.textContent = '—';
-
-  // reset badge
-  const b = document.getElementById('totalBadge');
-  b.style.background = '#fafafa';
-  b.style.color = '#111';
-  const lbl = b.querySelector('.badgeLabel');
-  if (lbl) lbl.style.color = 'rgba(0,0,0,.75)';
-  tMetaEl.style.color = 'rgba(0,0,0,.75)';
-
-  capsTextEl.textContent = 'Caps/SDs erscheinen nach „Berechnen“.';
-  drawRadarOn('radar', [50,50,50]);
-}
-
-// modal close
-closeBtn.addEventListener('click', ()=>{ modal.style.display='none'; });
-modal.addEventListener('click', (e)=>{ if (e.target === modal) modal.style.display='none'; });
-
-calcBtn.addEventListener('click', ()=>{
-  const sex = sexEl.value;
-  const wc = wcEl.value;
-  const ref = (data[sex]||{})[wc];
-  if (!ref){ alert('Keine Daten für diese Auswahl.'); return; }
-
-  const S = parseFloat(squatEl.value||'0');
-  const B = parseFloat(benchEl.value||'0');
-  const D = parseFloat(deadEl.value||'0');
-  const T = S+B+D;
-  totalEl.value = (Math.round(T*2)/2).toFixed(1);
-
-  const sSc = score(S, ref.S_cap, ref.S_sd);
-  const bSc = score(B, ref.B_cap, ref.B_sd);
-  const dSc = score(D, ref.D_cap, ref.D_sd);
-  const tSc = score(T, ref.T_cap, ref.T_sd);
-
-  // left scores
-  sScoreEl.textContent = fmt(sSc);
-  bScoreEl.textContent = fmt(bSc);
-  dScoreEl.textContent = fmt(dSc);
-
-  // total medal
-  paintTotalBadge(false, tSc, T);
-
-  // caps text
-  capsTextEl.innerHTML =
-    `Caps (P99.5=100): S ${ref.S_cap} / B ${ref.B_cap} / D ${ref.D_cap} / T ${ref.T_cap}<br>`+
-    `SD (10 Punkte = 1 SD): S ${ref.S_sd} / B ${ref.B_sd} / D ${ref.D_sd} / T ${ref.T_sd}`;
-
-  // modal content
-  document.getElementById('msScore').textContent = fmt(sSc);
-  document.getElementById('mbScore').textContent = fmt(bSc);
-  document.getElementById('mdScore').textContent = fmt(dSc);
-  document.getElementById('mtScore').textContent = fmt(tSc);
-  document.getElementById('modalMeta').textContent = `${sex==='M'?'Männer':'Frauen'} · ${wc} kg · Raw`;
-  document.getElementById('modalCaps').innerHTML =
-    `Eingaben: S ${fmt(S)} / B ${fmt(B)} / D ${fmt(D)} / T ${fmt(T)}<br>`+
-    `Caps (P99.5=100): S ${ref.S_cap} / B ${ref.B_cap} / D ${ref.D_cap} / T ${ref.T_cap}<br>`+
-    `SD (10 Punkte = 1 SD): S ${ref.S_sd} / B ${ref.B_sd} / D ${ref.D_sd} / T ${ref.T_sd}`;
-
-  // modal medal
-  paintTotalBadge(true, tSc, T);
-
-  // radar (ONLY S/B/D)
-  drawRadarOn('radar', [sSc,bSc,dSc]);
-  drawRadarOn('radarModal', [sSc,bSc,dSc]);
-
-  modal.style.display='flex';
-});
-
-// wiring
-sexEl.addEventListener('change', ()=>{updateWCOptions(); clearOutputs();});
-wcEl.addEventListener('change', clearOutputs);
-[squatEl, benchEl, deadEl].forEach(el => el.addEventListener('input', updateTotalOnly));
-
-updateWCOptions();
-updateTotalOnly();
-clearOutputs();
-</script>
-</body>
-</html>
+/* Apply tier classes to lift cards */
+function setLiftCardTier(cardEl, tier){
+  cardEl
