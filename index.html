@@ -32,9 +32,7 @@
 <body>
   <h1>National Strength Card – 100 = P99.5, 10 Punkte = 1 SD</h1>
   <p class="sub">
-    Nutzer geben Squat/Bench/Deadlift ein, wählen Sex & Gewichtsklasse, und erhalten Scores + Radar-Chart.
-    Formel: <code>Score = 100 + ((Wert − Cap_P99.5) / SD) · 10</code>.
-    (Raw; Gewichtsklassen 100 & 110 bei Männern sind bewusst entfernt.)
+ 
   </p>
 
   <div class="grid">
@@ -124,7 +122,34 @@
 
 <script>
 // Caps/SDs (Raw) – eingebettet.
-const data = "+json_str+";
+const data = {
+  "M": {
+    "53": {"S_cap":190,"S_sd":26.13,"B_cap":127.95,"B_sd":19.05,"D_cap":220,"D_sd":34.97,"T_cap":496.89,"T_sd":85.38},
+    "59": {"S_cap":217.5,"S_sd":29.62,"B_cap":147.5,"B_sd":20.18,"D_cap":252.5,"D_sd":35.36,"T_cap":570,"T_sd":90.79},
+    "66": {"S_cap":240,"S_sd":31.12,"B_cap":162.5,"B_sd":20.57,"D_cap":277.5,"D_sd":35.92,"T_cap":630,"T_sd":93.66},
+    "74": {"S_cap":262.5,"S_sd":33.83,"B_cap":177.5,"B_sd":22.69,"D_cap":300,"D_sd":36.4,"T_cap":685,"T_sd":95.32},
+    "83": {"S_cap":282.5,"S_sd":36.2,"B_cap":190,"B_sd":25.61,"D_cap":317.5,"D_sd":38.05,"T_cap":735,"T_sd":96.95},
+
+    "93": {"S_cap":297.5,"S_sd":36.15,"B_cap":207.5,"B_sd":25.70,"D_cap":327.5,"D_sd":37.33,"T_cap":802.5,"T_sd":94.09},
+
+    "105": {"S_cap":320,"S_sd":40.56,"B_cap":221,"B_sd":28.72,"D_cap":345,"D_sd":39.15,"T_cap":850,"T_sd":98.98},
+    "120": {"S_cap":342.5,"S_sd":44.12,"B_cap":240,"B_sd":32.02,"D_cap":359.5,"D_sd":41.64,"T_cap":900,"T_sd":112.39},
+    "120+": {"S_cap":402.5125,"S_sd":54.62,"B_cap":260,"B_sd":36.70,"D_cap":366.14,"D_sd":45.10,"T_cap":980,"T_sd":130.90}
+  },
+
+  "F": {
+    "43": {"S_cap":119.28,"S_sd":18.24,"B_cap":73.13,"B_sd":11.03,"D_cap":146.3,"D_sd":20.93,"T_cap":328.08,"T_sd":49.54},
+    "47": {"S_cap":143.24,"S_sd":21.59,"B_cap":93,"B_sd":13.83,"D_cap":172.5,"D_sd":23.72,"T_cap":399.38,"T_sd":57.26},
+    "52": {"S_cap":157.5,"S_sd":20.2,"B_cap":100,"B_sd":14.57,"D_cap":183.5,"D_sd":24.21,"T_cap":420,"T_sd":59.97},
+    "57": {"S_cap":167.5,"S_sd":23.23,"B_cap":107.5,"B_sd":12.34,"D_cap":192.5,"D_sd":24.29,"T_cap":450,"T_sd":60.12},
+    "63": {"S_cap":185,"S_sd":23.66,"B_cap":115,"B_sd":13.44,"D_cap":205,"D_sd":25.44,"T_cap":485,"T_sd":65.41},
+    "69": {"S_cap":197.5,"S_sd":25.72,"B_cap":122.5,"B_sd":14.48,"D_cap":217.5,"D_sd":26.48,"T_cap":520,"T_sd":72.27},
+    "76": {"S_cap":210,"S_sd":26.75,"B_cap":130,"B_sd":15.83,"D_cap":232.5,"D_sd":27.78,"T_cap":555,"T_sd":76.57},
+    "84": {"S_cap":225,"S_sd":27.48,"B_cap":137.5,"B_sd":16.59,"D_cap":245,"D_sd":28.74,"T_cap":590,"T_sd":80.49},
+    "84+": {"S_cap":240,"S_sd":30.12,"B_cap":145,"B_sd":18.01,"D_cap":260,"D_sd":31.08,"T_cap":625,"T_sd":90.03}
+  }
+};
+
 
 const sexEl = document.getElementById('sex');
 const wcEl = document.getElementById('wc');
