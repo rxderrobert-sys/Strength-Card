@@ -18,8 +18,7 @@
     button:active{transform: translateY(1px);}
     .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
     .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
-    .kpi{display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;}
-    @media (max-width: 760px){.kpi{grid-template-columns: repeat(2, 1fr);} }
+    .kpi{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;}
     .k{border:1px solid #eee; border-radius:14px; padding:10px 12px; background:#fafafa}
     .k b{display:block; font-size:12px; color:#444; font-weight:600}
     .k span{display:block; font-size:20px; margin-top:4px}
@@ -27,12 +26,65 @@
     canvas{width:100%; height:auto; border:1px solid #eee; border-radius:16px; background:white}
     .tiny{font-size:12px; color:#555; margin-top:8px}
     code{background:#f6f6f6; padding:2px 6px; border-radius:6px;}
+
+    /* Total Badge / Medal */
+    .badgeWrap{margin-top:12px;}
+    .badge{
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:18px;
+      padding:14px 16px;
+      background:#fafafa;
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.22),
+        0 8px 24px rgba(0,0,0,.12);
+      color:#111;
+      position:relative;
+      overflow:hidden;
+    }
+    .badgeTop{display:flex; align-items:baseline; justify-content:space-between; gap:10px;}
+    .badgeLabel{font-size:12px; color:rgba(0,0,0,.75); font-weight:800; letter-spacing:.3px;}
+    .badgeScore{font-size:34px; font-weight:900; line-height:1;}
+    .badgeMeta{margin-top:8px; font-size:12px; color:rgba(0,0,0,.75); opacity:.95;}
+
+    /* Shiny overlay */
+    .shiny::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background: linear-gradient(120deg,
+        rgba(255,255,255,0) 35%,
+        rgba(255,255,255,.25) 45%,
+        rgba(255,255,255,0) 55%
+      );
+      transform: translateX(-60%) rotate(8deg);
+      pointer-events:none;
+      filter: blur(0.6px);
+      animation: shineSweep 2.8s ease-in-out infinite;
+      opacity:.9;
+    }
+    .shiny::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image: radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size: 6px 6px;
+      opacity:.12;
+      pointer-events:none;
+      mix-blend-mode: overlay;
+    }
+    @keyframes shineSweep{
+      0%   { transform: translateX(-70%) rotate(8deg); opacity:0; }
+      20%  { opacity:.9; }
+      50%  { transform: translateX(10%) rotate(8deg); opacity:.7; }
+      80%  { opacity:0; }
+      100% { transform: translateX(10%) rotate(8deg); opacity:0; }
+    }
   </style>
 </head>
 <body>
   <h1>National Strength Card – 100 = P99.5, 10 Punkte = 1 SD</h1>
   <p class="sub">
- 
+    Formel: <code>Score = 100 + ((Wert − Cap_P99.5) / SD) · 10</code>.
   </p>
 
   <div class="grid">
@@ -78,10 +130,19 @@
       </div>
 
       <div class="kpi">
-        <div class="k"><b>Squat Score</b><span id="sScore">–</span></div>
-        <div class="k"><b>Bench Score</b><span id="bScore">–</span></div>
-        <div class="k"><b>Deadlift Score</b><span id="dScore">–</span></div>
-        <div class="k"><b>Total Score</b><span id="tScore">–</span></div>
+        <div class="k"><b>Squat</b><span id="sScore">–</span></div>
+        <div class="k"><b>Bench</b><span id="bScore">–</span></div>
+        <div class="k"><b>Deadlift</b><span id="dScore">–</span></div>
+      </div>
+
+      <div class="badgeWrap">
+        <div class="badge shiny" id="totalBadge">
+          <div class="badgeTop">
+            <div class="badgeLabel">TOTAL SCORE</div>
+            <div class="badgeScore" id="tScore">–</div>
+          </div>
+          <div class="badgeMeta" id="tMeta">—</div>
+        </div>
       </div>
 
       <div class="note" id="capsText">Caps/SDs erscheinen nach „Berechnen“.</div>
@@ -98,21 +159,33 @@
     <div style="width:min(960px, 100%); background:#fff; border-radius:16px; padding:16px; box-shadow:0 10px 40px rgba(0,0,0,.25)">
       <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
         <div>
-          <div style="font-weight:700; font-size:16px;">Deine National Strength Card</div>
+          <div style="font-weight:800; font-size:16px;">Deine National Strength Card</div>
           <div style="color:#444; font-size:12px; margin-top:2px;" id="modalMeta">–</div>
         </div>
         <button id="closeBtn" style="border:1px solid #ddd; background:#fff; color:#111; border-radius:12px; padding:8px 10px; cursor:pointer;">Schließen</button>
       </div>
+
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:12px; align-items:start;">
         <div>
-          <div class="kpi" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="kpi" style="grid-template-columns: repeat(3, 1fr);">
             <div class="k"><b>Squat</b><span id="msScore">–</span></div>
             <div class="k"><b>Bench</b><span id="mbScore">–</span></div>
             <div class="k"><b>Deadlift</b><span id="mdScore">–</span></div>
-            <div class="k"><b>Total</b><m><span id="mtScore">–</span></div>
           </div>
+
+          <div class="badgeWrap">
+            <div class="badge shiny" id="mTotalBadge">
+              <div class="badgeTop">
+                <div class="badgeLabel">TOTAL SCORE</div>
+                <div class="badgeScore" id="mtScore">–</div>
+              </div>
+              <div class="badgeMeta" id="mtMeta">—</div>
+            </div>
+          </div>
+
           <div class="note" id="modalCaps" style="margin-top:10px;">–</div>
         </div>
+
         <div>
           <canvas id="radarModal" width="460" height="460" style="width:100%; height:auto; border:1px solid #eee; border-radius:16px;"></canvas>
         </div>
@@ -122,6 +195,7 @@
 
 <script>
 // Caps/SDs (Raw) – eingebettet.
+// Hinweis: Männer 100 & 110 sind bewusst NICHT enthalten.
 const data = {
   "M": {
     "53": {"S_cap":190,"S_sd":26.13,"B_cap":127.95,"B_sd":19.05,"D_cap":220,"D_sd":34.97,"T_cap":496.89,"T_sd":85.38},
@@ -129,17 +203,14 @@ const data = {
     "66": {"S_cap":240,"S_sd":31.12,"B_cap":162.5,"B_sd":20.57,"D_cap":277.5,"D_sd":35.92,"T_cap":630,"T_sd":93.66},
     "74": {"S_cap":262.5,"S_sd":33.83,"B_cap":177.5,"B_sd":22.69,"D_cap":300,"D_sd":36.4,"T_cap":685,"T_sd":95.32},
     "83": {"S_cap":282.5,"S_sd":36.2,"B_cap":190,"B_sd":25.61,"D_cap":317.5,"D_sd":38.05,"T_cap":735,"T_sd":96.95},
-
     "93": {"S_cap":297.5,"S_sd":36.15,"B_cap":207.5,"B_sd":25.70,"D_cap":327.5,"D_sd":37.33,"T_cap":802.5,"T_sd":94.09},
-
     "105": {"S_cap":320,"S_sd":40.56,"B_cap":221,"B_sd":28.72,"D_cap":345,"D_sd":39.15,"T_cap":850,"T_sd":98.98},
     "120": {"S_cap":342.5,"S_sd":44.12,"B_cap":240,"B_sd":32.02,"D_cap":359.5,"D_sd":41.64,"T_cap":900,"T_sd":112.39},
-    "120+": {"S_cap":402.5125,"S_sd":54.62,"B_cap":260,"B_sd":36.70,"D_cap":366.14,"D_sd":45.10,"T_cap":980,"T_sd":130.90}
+    "120+": {"S_cap":402.5,"S_sd":54.62,"B_cap":260,"B_sd":36.7,"D_cap":366.1,"D_sd":45.1,"T_cap":980,"T_sd":130.9}
   },
-
   "F": {
-    "43": {"S_cap":119.28,"S_sd":18.24,"B_cap":73.13,"B_sd":11.03,"D_cap":146.3,"D_sd":20.93,"T_cap":328.08,"T_sd":49.54},
-    "47": {"S_cap":143.24,"S_sd":21.59,"B_cap":93,"B_sd":13.83,"D_cap":172.5,"D_sd":23.72,"T_cap":399.38,"T_sd":57.26},
+    "43": {"S_cap":119.3,"S_sd":18.24,"B_cap":73.1,"B_sd":11.03,"D_cap":146.3,"D_sd":20.93,"T_cap":328.1,"T_sd":49.54},
+    "47": {"S_cap":143.2,"S_sd":21.59,"B_cap":93,"B_sd":13.83,"D_cap":172.5,"D_sd":23.72,"T_cap":399.4,"T_sd":57.26},
     "52": {"S_cap":157.5,"S_sd":20.2,"B_cap":100,"B_sd":14.57,"D_cap":183.5,"D_sd":24.21,"T_cap":420,"T_sd":59.97},
     "57": {"S_cap":167.5,"S_sd":23.23,"B_cap":107.5,"B_sd":12.34,"D_cap":192.5,"D_sd":24.29,"T_cap":450,"T_sd":60.12},
     "63": {"S_cap":185,"S_sd":23.66,"B_cap":115,"B_sd":13.44,"D_cap":205,"D_sd":25.44,"T_cap":485,"T_sd":65.41},
@@ -149,7 +220,6 @@ const data = {
     "84+": {"S_cap":240,"S_sd":30.12,"B_cap":145,"B_sd":18.01,"D_cap":260,"D_sd":31.08,"T_cap":625,"T_sd":90.03}
   }
 };
-
 
 const sexEl = document.getElementById('sex');
 const wcEl = document.getElementById('wc');
@@ -162,6 +232,7 @@ const sScoreEl = document.getElementById('sScore');
 const bScoreEl = document.getElementById('bScore');
 const dScoreEl = document.getElementById('dScore');
 const tScoreEl = document.getElementById('tScore');
+const tMetaEl  = document.getElementById('tMeta');
 const capsTextEl = document.getElementById('capsText');
 
 const modal = document.getElementById('modal');
@@ -207,17 +278,48 @@ function clamp(x, lo, hi){
   return Math.max(lo, Math.min(hi, x));
 }
 
+// Total badge colors (only color, no labels/quotes)
+function totalTheme(tScore){
+  // <70 grey, 70–80 bronze, 80–90 silver, 90–95 gold, 95–100 special, 100+ god
+  if (!Number.isFinite(tScore)) return {bg:'#fafafa', fg:'#111', meta:'rgba(0,0,0,.75)'};
+  if (tScore >= 100) return {bg:'linear-gradient(135deg,#5b21b6,#a21caf,#f59e0b)', fg:'#fff', meta:'rgba(255,255,255,.9)'};
+  if (tScore >= 95)  return {bg:'linear-gradient(135deg,#4c1d95,#7c3aed)', fg:'#fff', meta:'rgba(255,255,255,.9)'};
+  if (tScore >= 90)  return {bg:'#d4af37', fg:'#111', meta:'rgba(0,0,0,.78)'};
+  if (tScore >= 80)  return {bg:'#c0c0c0', fg:'#111', meta:'rgba(0,0,0,.78)'};
+  if (tScore >= 70)  return {bg:'#cd7f32', fg:'#111', meta:'rgba(0,0,0,.78)'};
+  return {bg:'#9aa0a6', fg:'#111', meta:'rgba(0,0,0,.78)'};
+}
+
+function paintTotalBadge(isModal, tSc, totalKg){
+  const badge = document.getElementById(isModal ? 'mTotalBadge' : 'totalBadge');
+  const scoreEl = document.getElementById(isModal ? 'mtScore' : 'tScore');
+  const metaEl  = document.getElementById(isModal ? 'mtMeta' : 'tMeta');
+
+  scoreEl.textContent = fmt(tSc);
+  metaEl.textContent = Number.isFinite(totalKg) ? `Total (kg): ${fmt(totalKg)}` : '—';
+
+  const th = totalTheme(tSc);
+  badge.style.background = th.bg;
+  badge.style.color = th.fg;
+
+  // ensure the label/meta look correct on dark gradients
+  const label = badge.querySelector('.badgeLabel');
+  if (label) label.style.color = th.fg;
+  metaEl.style.color = th.meta;
+}
+
 function drawRadarOn(canvasId, scores){
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0,0,W,H);
 
-  const labels = ['Squat','Bench','Deadlift','Total'];
+  const labels = ['Squat','Bench','Deadlift']; // ONLY 3 axes
   const minV = 50, maxV = 110;
   const cx = W/2, cy = H/2;
   const R = Math.min(W,H)*0.38;
 
+  // grid rings
   ctx.strokeStyle = 'rgba(0,0,0,0.15)';
   ctx.lineWidth = 1;
   const rings = [50,60,70,80,90,100,110];
@@ -234,6 +336,7 @@ function drawRadarOn(canvasId, scores){
     ctx.stroke();
   }
 
+  // axes + labels
   ctx.strokeStyle = 'rgba(0,0,0,0.25)';
   for (let i=0;i<labels.length;i++){
     const a = -Math.PI/2 + i*(2*Math.PI/labels.length);
@@ -251,6 +354,7 @@ function drawRadarOn(canvasId, scores){
     ctx.fillText(labels[i], tx - 18, ty + 6);
   }
 
+  // polygon
   ctx.lineWidth = 2;
   ctx.strokeStyle = 'rgba(0,0,0,0.85)';
   ctx.fillStyle = 'rgba(0,0,0,0.12)';
@@ -269,9 +373,20 @@ function drawRadarOn(canvasId, scores){
 }
 
 function clearOutputs(){
-  sScoreEl.textContent = bScoreEl.textContent = dScoreEl.textContent = tScoreEl.textContent = '–';
+  sScoreEl.textContent = bScoreEl.textContent = dScoreEl.textContent = '–';
+  tScoreEl.textContent = '–';
+  tMetaEl.textContent = '—';
+
+  // reset badge
+  const b = document.getElementById('totalBadge');
+  b.style.background = '#fafafa';
+  b.style.color = '#111';
+  const lbl = b.querySelector('.badgeLabel');
+  if (lbl) lbl.style.color = 'rgba(0,0,0,.75)';
+  tMetaEl.style.color = 'rgba(0,0,0,.75)';
+
   capsTextEl.textContent = 'Caps/SDs erscheinen nach „Berechnen“.';
-  drawRadarOn('radar', [50,50,50,50]);
+  drawRadarOn('radar', [50,50,50]);
 }
 
 // modal close
@@ -295,11 +410,15 @@ calcBtn.addEventListener('click', ()=>{
   const dSc = score(D, ref.D_cap, ref.D_sd);
   const tSc = score(T, ref.T_cap, ref.T_sd);
 
+  // left scores
   sScoreEl.textContent = fmt(sSc);
   bScoreEl.textContent = fmt(bSc);
   dScoreEl.textContent = fmt(dSc);
-  tScoreEl.textContent = fmt(tSc);
 
+  // total medal
+  paintTotalBadge(false, tSc, T);
+
+  // caps text
   capsTextEl.innerHTML =
     `Caps (P99.5=100): S ${ref.S_cap} / B ${ref.B_cap} / D ${ref.D_cap} / T ${ref.T_cap}<br>`+
     `SD (10 Punkte = 1 SD): S ${ref.S_sd} / B ${ref.B_sd} / D ${ref.D_sd} / T ${ref.T_sd}`;
@@ -315,8 +434,13 @@ calcBtn.addEventListener('click', ()=>{
     `Caps (P99.5=100): S ${ref.S_cap} / B ${ref.B_cap} / D ${ref.D_cap} / T ${ref.T_cap}<br>`+
     `SD (10 Punkte = 1 SD): S ${ref.S_sd} / B ${ref.B_sd} / D ${ref.D_sd} / T ${ref.T_sd}`;
 
-  drawRadarOn('radar', [sSc,bSc,dSc,tSc]);
-  drawRadarOn('radarModal', [sSc,bSc,dSc,tSc]);
+  // modal medal
+  paintTotalBadge(true, tSc, T);
+
+  // radar (ONLY S/B/D)
+  drawRadarOn('radar', [sSc,bSc,dSc]);
+  drawRadarOn('radarModal', [sSc,bSc,dSc]);
+
   modal.style.display='flex';
 });
 
